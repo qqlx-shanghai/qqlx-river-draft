@@ -2,14 +2,16 @@ import { Module, Injectable } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { DropletLocation, SHANGHAI_POSTGRESQL_DROPLET, DROPLET_POND_USER } from "qqlx-core";
+import { DropletHost, DROPLET_SHANGHAI_POSTGRESQL } from "qqlx-core";
 import { DraftNodeSchema, DraftNodeRelationSchema } from "qqlx-cdk";
-import { getLocalNetworkIPs, DropletLocationMessenger, PondUserMessenger } from "qqlx-sdk";
+import { DropletHostRpc, StreamLogRpc, StreamUserRpc } from "qqlx-sdk";
 
 import { DropletModule } from "../_/droplet.module";
 import DraftNodeController from "./node.controller";
 import { DraftNodeDao } from "./node.dao";
 import { DraftNodeRelationDao } from "./relation.dao";
+
+export const REST_PORT = 8005;
 
 /** 相关解释
  * @imports 导入一个模块中 exports 的内容，放入公共资源池中
@@ -21,22 +23,23 @@ import { DraftNodeRelationDao } from "./relation.dao";
     imports: [
         TypeOrmModule.forRootAsync({
             imports: [DropletModule],
-            inject: [DropletLocationMessenger],
-            useFactory: async (pondDropletMessenger: DropletLocationMessenger) => {
-                const node_db = await pondDropletMessenger.get({ key: SHANGHAI_POSTGRESQL_DROPLET });
-                const mess = node_db.droplet?.remark?.split(";") || [];
+            inject: [DropletHostRpc],
+            useFactory: async (pondDropletMessenger: DropletHostRpc) => {
+                const node_db = await pondDropletMessenger.get({ key: DROPLET_SHANGHAI_POSTGRESQL });
+                const mess = node_db?.remark?.split(";") || [];
                 const dbname = mess[0];
                 const username = mess[1];
                 const passwd = mess[2];
 
-                console.log("\n---- ---- ---- rest.module.ts");
-                console.log(`droplet-location:get - ${SHANGHAI_POSTGRESQL_DROPLET}:${node_db.droplet?.lan_ip}:${node_db.droplet?.port}`);
-                console.log("---- ---- ----\n");
+                console.log("\n");
+                console.log(`🌊 qqlx-droplet-host:get - ${DROPLET_SHANGHAI_POSTGRESQL}`);
+                console.log(`🌊 rest.module.ts at ${REST_PORT} ✔`);
+                console.log("\n");
 
                 return {
                     type: "postgres",
-                    host: node_db.droplet?.lan_ip,
-                    port: node_db.droplet?.port,
+                    host: node_db?.lan_ip,
+                    port: node_db?.port,
                     username: username,
                     password: passwd,
                     database: dbname,
@@ -47,7 +50,7 @@ import { DraftNodeRelationDao } from "./relation.dao";
         }),
         TypeOrmModule.forFeature([DraftNodeSchema, DraftNodeRelationSchema]),
     ],
-    providers: [DropletLocationMessenger, PondUserMessenger, DraftNodeDao, DraftNodeRelationDao],
+    providers: [DropletHostRpc, StreamLogRpc, StreamUserRpc, DraftNodeDao, DraftNodeRelationDao],
     controllers: [DraftNodeController],
 })
-export class RestModule {}
+export class RestModule { }

@@ -12,10 +12,10 @@ import { getLocalNetworkIPs, PgDao } from "qqlx-sdk";
 export class DraftNodeRelationDao extends PgDao<DraftNodeRelation> {
     constructor(
         @InjectRepository(DraftNodeRelationSchema)
-        private readonly DraftNodeRelationRepository: Repository<DraftNodeRelationSchema>
+        private readonly repo: Repository<DraftNodeRelation>
     ) {
         super({
-            repository: DraftNodeRelationRepository,
+            repository: repo,
             relations_name: RELATIONS_RIVER_DRAFT_NODE_RELATION,
         });
     }

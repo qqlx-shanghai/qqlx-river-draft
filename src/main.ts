@@ -3,7 +3,7 @@ import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 
 import { } from "qqlx-core";
 import { toNumber, toString, toBoolean } from "qqlx-cdk";
-import { getLocalNetworkIPs, CommonExceptionFilter, ResponseInterceptor, PondLogMessenger, DropletLocationMessenger } from "qqlx-sdk";
+import { getLocalNetworkIPs, CommonExceptionFilter, ResponseInterceptor, PondLogMessenger, DropletHostRpc } from "qqlx-sdk";
 
 import { RestModule } from "./rest/module";
 
@@ -12,8 +12,8 @@ async function bootstrap () {
 
     // 对外的 RESTful API
     const app = await NestFactory.create(RestModule);
-    app.useGlobalFilters(new CommonExceptionFilter(new PondLogMessenger(new DropletLocationMessenger())));
-    app.useGlobalInterceptors(new ResponseInterceptor(new PondLogMessenger(new DropletLocationMessenger())));
+    app.useGlobalFilters(new CommonExceptionFilter(new PondLogMessenger(new DropletHostRpc())));
+    app.useGlobalInterceptors(new ResponseInterceptor(new PondLogMessenger(new DropletHostRpc())));
     await app.listen(HTTP_PORT);
 
     // System tips
